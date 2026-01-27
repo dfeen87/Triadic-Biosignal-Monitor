@@ -1,0 +1,53 @@
+# Default Configuration for Triadic Biosignal Monitor
+# Full Coupled Mode (EEG + ECG with coupling term)
+
+instability_functional:
+  alpha: 0.4    # Spectral/morphological weight
+  beta: 0.3     # Information/entropy weight
+  gamma: 0.3    # Coupling/coherence weight
+  threshold: 2.5   # Decision gate threshold τ
+
+baseline:
+  window_seconds: 60.0
+  method: 'median'
+  min_quality: 0.7
+
+preprocessing:
+  eeg:
+    sampling_rate: 256
+    bandpass: [0.5, 50.0]
+    notch: 60.0
+    remove_drift: true
+    artifact_threshold: 5.0
+  ecg:
+    sampling_rate: 256
+    bandpass: [0.5, 40.0]
+    notch: 60.0
+    remove_drift: true
+    artifact_threshold: 5.0
+
+features:
+  delta_S:
+    eeg_bands:
+      delta: [0.5, 4]
+      theta: [4, 8]
+      alpha: [8, 13]
+      beta: [13, 30]
+      gamma: [30, 50]
+    ecg_metrics: ['LF_HF', 'RMSSD', 'SDNN']
+  delta_I:
+    method: 'permutation_entropy'
+    params:
+      order: 3
+      delay: 1
+  delta_C:
+    method: 'PLV'
+    frequency_bands: [[0.5, 4], [4, 8], [8, 13]]
+
+sliding_window:
+  window_size: 10.0
+  overlap: 0.5
+
+quality:
+  min_quality_score: 0.5
+  fallback_on_poor_quality: true
