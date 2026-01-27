@@ -91,18 +91,10 @@ jupyter notebook notebooks/01_phase_extraction_demo.ipynb
 triadic-biosignal-monitor/
 ├── README.md                             # This file
 ├── LICENSE                               # MIT License
-├── SCOPE_AND_SAFETY.md                   # Safety statement & regulatory guidance
-├── CONTRIBUTING.md                       # Contribution guidelines
+├── PAPER.md                              # Full paper in markdown format
 ├── requirements.txt                      # Python dependencies
 ├── setup.py                              # Package installation script
 ├── .gitignore                           # Git ignore patterns
-├── .github/
-│   ├── workflows/
-│   │   ├── tests.yml                    # CI/CD for automated testing
-│   │   └── docs.yml                     # Documentation deployment
-│   └── ISSUE_TEMPLATE/
-│       ├── bug_report.md
-│       └── feature_request.md
 │
 ├── core/                                 # Core signal processing modules
 │   ├── __init__.py                      # Package initialization
@@ -110,30 +102,24 @@ triadic-biosignal-monitor/
 │   ├── features.py                      # ΔS, ΔI, ΔC computation with baseline normalization
 │   ├── gate.py                          # ΔΦ instability functional and decision gate
 │   ├── metrics.py                       # Lead-time, false alarms/hr, ROC, ablations
-│   ├── preprocessing.py                 # Artifact rejection, filtering, synchronization
-│   └── utils.py                         # Helper functions, validators, common utilities
+│   └── preprocessing.py                 # Artifact rejection, filtering, synchronization
 │
 ├── pipelines/                           # Analysis pipelines
 │   ├── __init__.py
-│   ├── base.py                          # Base pipeline class with common functionality
-│   ├── eeg_only.py                      # EEG-only ablation pipeline (ΔΦ = α|ΔS| + β|ΔI|)
-│   ├── ecg_only.py                      # ECG-only ablation pipeline (ΔΦ = α|ΔS| + β|ΔI|)
-│   ├── coupled.py                       # Full coupled EEG-ECG pipeline (+ γ|ΔC|)
+│   ├── eeg_only.py                      # EEG-only ablation pipeline
+│   ├── ecg_only.py                      # ECG-only ablation pipeline
+│   ├── coupled.py                       # Full coupled EEG-ECG pipeline
 │   └── streaming.py                     # Near-real-time streaming mode (Phase 2)
 │
 ├── datasets/                            # Dataset management
 │   ├── __init__.py
-│   ├── loaders.py                       # Dataset loading utilities (EEG, ECG/HRV formats)
-│   ├── synthetic.py                     # Synthetic regime-change signal generators
-│   ├── validators.py                    # Data quality checks and validation
-│   └── README.md                        # Dataset documentation and sources
+│   ├── loaders.py                       # Dataset loading utilities
+│   └── synthetic.py                     # Synthetic regime-change signal generators
 │
 ├── configs/                             # Configuration files
-│   ├── default.yaml                     # Default parameters (α=0.4, β=0.3, γ=0.3, τ=2.5)
-│   ├── eeg_only.yaml                    # EEG-only ablation config (γ=0)
-│   ├── ecg_only.yaml                    # ECG-only ablation config (γ=0)
-│   ├── streaming.yaml                   # Streaming mode config with buffer settings
-│   └── README.md                        # Configuration parameter documentation
+│   ├── default.yaml                     # Default parameters (α, β, γ, τ)
+│   ├── eeg_only.yaml                    # EEG-only ablation config
+│   └── ecg_only.yaml                    # ECG-only ablation config
 │
 ├── notebooks/                           # Jupyter notebooks for validation & demos
 │   ├── 01_phase_extraction_demo.ipynb   # Demonstrates ϕ(t) and χ(t) extraction
@@ -141,56 +127,25 @@ triadic-biosignal-monitor/
 │   ├── 03_eeg_validation.ipynb          # Reproduce EEG dataset results from paper
 │   ├── 04_synthetic_validation.ipynb    # Synthetic regime-change detection tests
 │   ├── 05_ablation_analysis.ipynb       # Compare EEG-only vs ECG-only vs coupled
-│   ├── 06_full_pipeline_demo.ipynb      # End-to-end demonstration
-│   └── 07_performance_profiling.ipynb   # Latency and resource usage analysis
+│   └── 06_full_pipeline_demo.ipynb      # End-to-end demonstration
 │
 ├── docs/                                # Comprehensive documentation
 │   ├── SCOPE_AND_SAFETY.md              # Medical-device safe language, limitations
-│   ├── IMPLEMENTATION_GUIDE.md          # Technical implementation details
 │   ├── REPRODUCIBILITY.md               # Step-by-step reproduction of paper results
-│   ├── API_REFERENCE.md                 # Detailed function signatures and usage
-│   ├── VALIDATION_PROTOCOL.md           # Prospective validation guidelines
-│   ├── CONFIGURATION_GUIDE.md           # How to configure parameters properly
-│   ├── TROUBLESHOOTING.md               # Common issues and solutions
-│   └── PAPER.md                         # Scientific preprint 
+│   └── VALIDATION_PROTOCOL.md           # Prospective validation guidelines
 │
 ├── tests/                               # Test suite
 │   ├── __init__.py
-│   ├── conftest.py                      # Pytest configuration and fixtures
 │   ├── test_phase.py                    # Tests for phase.py
 │   ├── test_features.py                 # Tests for features.py
 │   ├── test_gate.py                     # Tests for gate.py
 │   ├── test_metrics.py                  # Tests for metrics.py
 │   ├── test_preprocessing.py            # Tests for preprocessing.py
-│   ├── test_pipelines.py                # Integration tests for pipelines
-│   ├── test_data/                       # Small test datasets
-│   │   ├── synthetic_eeg.npy
-│   │   ├── synthetic_ecg.npy
-│   │   └── expected_outputs.json
-│   └── performance/                     # Performance regression tests
-│       └── test_latency.py
+│   └── test_pipelines.py                # Integration tests for pipelines
 │
-├── scripts/                             # Command-line utilities
-│   ├── run_validation.py                # Batch validation runner
-│   ├── generate_report.py               # Performance report generator (HTML/PDF)
-│   ├── export_results.py                # Results export utilities (CSV, JSON, HDF5)
-│   ├── benchmark.py                     # Benchmarking script for performance
-│   └── demo.py                          # Quick demo script for new users
-│
-├── examples/                            # Example usage scripts
-│   ├── basic_eeg_analysis.py            # Simple EEG-only analysis
-│   ├── coupled_analysis.py              # Full coupled EEG-ECG example
-│   ├── custom_features.py               # How to add custom feature extractors
-│   └── real_time_simulation.py          # Simulated real-time processing
-│
-└── data/                                # Data directory (not tracked in git)
-    ├── .gitkeep
-    ├── raw/                             # Raw datasets (user-provided)
-    ├── processed/                       # Preprocessed datasets
-    └── results/                         # Analysis outputs
-        ├── figures/
-        ├── reports/
-        └── logs/
+└── scripts/                             # Command-line utilities
+    ├── run_validation.py                # Batch validation runner
+    └── generate_report.py               # Performance report generator/
 ```
 
 ### Directory Descriptions
