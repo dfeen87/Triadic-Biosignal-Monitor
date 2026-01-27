@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this software or methodology, please cite the associated paper."
+
+title: "Triadic Biosignal Monitor: Operator-Based Heart–Brain Isostasis Monitoring"
+
+authors:
+  - family-names: "Krüger"
+    given-names: "Marcel"
+    orcid: "https://orcid.org/0009-0002-5709-9729"
+    affiliation: "Independent Researcher, Meiningen, Germany"
+  - family-names: "Feeney"
+    given-names: "Don Michael"
+    orcid: "https://orcid.org/0009-0003-1350-4160"
+    affiliation: "Independent Researcher, Pennsylvania, USA"
+
+version: "1.0.0"
+date-released: "2026-01-27"
+
+license: "MIT"
+
+repository-code: "https://github.com/dfeen87/Triadic-Biosignal-Monitor"
+
+keywords:
+  - EEG
+  - ECG
+  - heart-brain coupling
+  - phase analysis
+  - regime change detection
+  - interpretable AI
+  - biosignal processing
+  - medical decision support
+
+preferred-citation:
+  type: article
+  title: "Operator-Based Heart–Brain Isostasis Monitoring via Triadic Spiral-Time Embeddings: A Conservative, Falsifiable Framework for Early-Warning Detection in Coupled EEG/ECG Dynamics"
+  authors:
+    - family-names: "Krüger"
+      given-names: "Marcel"
+      orcid: "https://orcid.org/0009-0002-5709-9729"
+    - family-names: "Feeney"
+      given-names: "Don Michael"
+      orcid: "https://orcid.org/0009-0003-1350-4160"
+  year: 2026
+  journal: "Preprint"
+  url: "https://github.com/dfeen87/Triadic-Biosignal-Monitor"
