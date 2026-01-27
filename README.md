@@ -191,11 +191,6 @@ triadic-biosignal-monitor/
 - Report generation utilities
 - Benchmarking and profiling tools
 
-**Examples (`/examples/`)**
-- Standalone example scripts
-- Common use-case demonstrations
-- Template code for custom implementations
-
 ---
 
 ## Quick Usage
