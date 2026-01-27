@@ -1,0 +1,40 @@
+# Core Scientific Computing
+numpy>=1.21.0,<2.0.0
+scipy>=1.7.0,<2.0.0
+matplotlib>=3.4.0,<4.0.0
+pandas>=1.3.0,<3.0.0
+
+# Signal Processing
+scikit-learn>=1.0.0,<2.0.0
+
+# Jupyter and Notebooks
+jupyter>=1.0.0
+jupyterlab>=3.0.0
+notebook>=6.4.0
+ipykernel>=6.0.0
+nbconvert>=6.0.0
+
+# Visualization
+seaborn>=0.11.0,<1.0.0
+plotly>=5.0.0,<6.0.0
+
+# Optional: EEG/ECG Data Loading
+mne>=1.0.0,<2.0.0  # For EEG data formats (.edf, .fif)
+
+# Optional: Additional utilities
+tqdm>=4.60.0  # Progress bars
+pyyaml>=5.4.0  # Configuration files
+
+# Testing (optional but recommended)
+pytest>=6.2.0,<8.0.0
+pytest-cov>=2.12.0
+
+# Code Quality (optional)
+black>=21.0  # Code formatting
+flake8>=3.9.0  # Linting
+pylint>=2.10.0  # Static analysis
+mypy>=0.910  # Type checking
+
+# Documentation (optional)
+sphinx>=4.0.0  # Documentation generation
+sphinx-rtd-theme>=0.5.0  # ReadTheDocs theme
