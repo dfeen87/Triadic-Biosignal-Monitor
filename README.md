@@ -89,14 +89,15 @@ jupyter notebook notebooks/01_phase_extraction_demo.ipynb
 
 ```
 triadic-biosignal-monitor/
-├── README.md                             # This file
-├── LICENSE                               # MIT License
-├── PAPER.md                              # Full paper in markdown format
-├── requirements.txt                      # Python dependencies
-├── setup.py                              # Package installation script
+├── README.md                            # This file
+├── LICENSE                              # MIT License
+├── CITATION.cff                         # Citation metadata for academic referencing
+├── PAPER.md                             # Full paper in markdown format
+├── requirements.txt                     # Python dependencies
+├── setup.py                             # Package installation script
 ├── .gitignore                           # Git ignore patterns
 │
-├── core/                                 # Core signal processing modules
+├── core/                                # Core signal processing modules
 │   ├── __init__.py                      # Package initialization
 │   ├── phase.py                         # Hilbert phase extraction, unwrap, robust derivative
 │   ├── features.py                      # ΔS, ΔI, ΔC computation with baseline normalization
