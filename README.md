@@ -1,4 +1,4 @@
-# triadic-biosignal-monitor
+# Triadic-Biosignal-Monitor
 
 **A Deterministic Software Framework for Early-Warning Detection in Coupled EEG–ECG Time Series**
 
@@ -70,7 +70,7 @@ G(t) = 1{ΔΦ(t) ≥ τ}
 
 ```bash
 # Clone the repository
-git clone https://github.com/[username]/triadic-biosignal-monitor.git
+git clone https://github.com/dfeen87/triadic-biosignal-monitor.git
 cd triadic-biosignal-monitor
 
 # Install dependencies
