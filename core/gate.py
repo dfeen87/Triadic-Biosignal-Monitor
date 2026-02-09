@@ -271,7 +271,7 @@ def generate_alert(
     # No sync drift
     confidence_factors.append(0.0 if sync_drift else 1.0)
     
-    confidence = np.mean(confidence_factors)
+    confidence = float(np.prod(confidence_factors))
     
     # Quality flags
     flags = {
