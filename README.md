@@ -91,6 +91,7 @@ jupyter notebook notebooks/01_phase_extraction_demo.ipynb
 triadic-biosignal-monitor/
 ├── README.md                            # This file
 ├── LICENSE                              # MIT License
+├── .github/workflows                    # CI Pipeline
 ├── CITATION.cff                         # Citation metadata for academic referencing
 ├── PAPER.md                             # Full paper in markdown format
 ├── requirements.txt                     # Python dependencies
