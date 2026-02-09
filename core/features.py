@@ -538,8 +538,11 @@ def compute_delta_I(
         raise ValueError(f"Unknown method: {method}")
     
     # Compute entropies
-    if method == 'permutation_entropy' and 'normalize' not in kwargs:
-        kwargs['normalize'] = False
+    if method == 'permutation_entropy':
+        if 'order' not in kwargs:
+            kwargs['order'] = 4
+        if 'normalize' not in kwargs:
+            kwargs['normalize'] = False
 
     current_entropy = entropy_fn(sig, **kwargs)
     baseline_entropy = entropy_fn(baseline_sig, **kwargs)

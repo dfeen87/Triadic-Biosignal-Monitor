@@ -342,6 +342,8 @@ def detect_alert_events(
     
     # Process each alert period
     for onset_idx, offset_idx in zip(onset_indices, offset_indices):
+        if gate_series[offset_idx] == 0 and offset_idx > onset_idx:
+            offset_idx -= 1
         # Check duration
         duration = timestamps[offset_idx] - timestamps[onset_idx]
         if duration < min_duration:
