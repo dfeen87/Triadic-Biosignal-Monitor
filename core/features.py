@@ -538,12 +538,21 @@ def compute_delta_I(
         raise ValueError(f"Unknown method: {method}")
     
     # Compute entropies
+    if method == 'permutation_entropy':
+        if 'order' not in kwargs:
+            kwargs['order'] = 4
+        if 'normalize' not in kwargs:
+            kwargs['normalize'] = False
+
     current_entropy = entropy_fn(sig, **kwargs)
     baseline_entropy = entropy_fn(baseline_sig, **kwargs)
-    
-    # Normalized deviation
-    delta_I = np.abs(current_entropy - baseline_entropy) / (baseline_entropy + 1e-10)
-    
+
+    # Deviation (permutation entropy uses absolute delta in bits)
+    if method == 'permutation_entropy':
+        delta_I = np.abs(current_entropy - baseline_entropy)
+    else:
+        delta_I = np.abs(current_entropy - baseline_entropy) / (baseline_entropy + 1e-10)
+
     return delta_I
 
 
@@ -580,8 +589,13 @@ def magnitude_squared_coherence(
     freqs, coh = signal.coherence(sig1, sig2, fs=fs, nperseg=min(len(sig1), 256))
     
     if freq_bands is None:
-        # Return mean coherence
-        return {'mean': np.mean(coh)}
+        # Return mean coherence around dominant frequency content
+        freqs_psd, pxx = signal.welch(sig1, fs=fs, nperseg=min(len(sig1), 256))
+        peak_freq = freqs_psd[np.argmax(pxx)]
+        band = (max(0.0, peak_freq - 2.0), peak_freq + 2.0)
+        idx = np.logical_and(freqs >= band[0], freqs <= band[1])
+        mean_coh = np.mean(coh[idx]) if np.any(idx) else np.mean(coh)
+        return {'mean': mean_coh}
     
     # Compute coherence in each band
     coherences = {}

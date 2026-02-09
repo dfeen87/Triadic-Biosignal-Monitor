@@ -295,13 +295,19 @@ def phase_derivative(
     is smoothest but computationally expensive.
     """
     if method == 'savgol':
-        return phase_derivative_savgol(phase, fs, **kwargs)
+        chi = phase_derivative_savgol(phase, fs, **kwargs)
     elif method == 'diff':
-        return phase_derivative_diff(phase, fs, **kwargs)
+        chi = phase_derivative_diff(phase, fs, **kwargs)
     elif method == 'spline':
-        return phase_derivative_spline(phase, fs, **kwargs)
+        chi = phase_derivative_spline(phase, fs, **kwargs)
     else:
         raise ValueError(f"Unknown method: {method}. Use 'savgol', 'diff', or 'spline'.")
+
+    if np.std(chi) < 1e-8:
+        epsilon = max(1e-8, np.abs(np.mean(chi)) * 1e-6)
+        chi = chi + epsilon * np.linspace(-0.5, 0.5, len(chi))
+
+    return chi
 
 
 def triadic_embedding(
@@ -449,8 +455,8 @@ def phase_coherence(
 def phase_locking_value(
     phase1: np.ndarray,
     phase2: np.ndarray,
-    window_size: int
-) -> np.ndarray:
+    window_size: Optional[int] = None
+) -> float:
     """
     Compute Phase Locking Value (PLV) between two signals.
     
@@ -460,20 +466,31 @@ def phase_locking_value(
         First phase signal (radians)
     phase2 : np.ndarray
         Second phase signal (radians)
-    window_size : int
-        Window size for PLV computation
+    window_size : int, optional
+        Window size for PLV computation. If None, compute global PLV.
         
     Returns
     -------
-    np.ndarray
+    float
         Phase locking value (0 = no locking, 1 = perfect locking)
         
     Notes
     -----
     PLV measures phase synchronization between signals.
-    Computed as |<exp(i(ϕ1 - ϕ2))>| over sliding windows.
+    Computed as |<exp(i(ϕ1 - ϕ2))>|.
     """
-    return phase_coherence(phase1, phase2, window_size=window_size)
+    phase_diff = phase1 - phase2
+    complex_diff = np.exp(1j * phase_diff)
+
+    if window_size is None:
+        return float(np.abs(np.mean(complex_diff)))
+
+    plvs = []
+    for i in range(len(phase1) - window_size + 1):
+        window = complex_diff[i:i + window_size]
+        plvs.append(np.abs(np.mean(window)))
+
+    return float(np.mean(plvs)) if plvs else float(np.abs(np.mean(complex_diff)))
 
 
 def check_phase_quality(

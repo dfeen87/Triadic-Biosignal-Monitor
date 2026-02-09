@@ -16,6 +16,8 @@ import numpy as np
 from typing import Dict, Optional, Tuple
 import warnings
 
+from scipy import signal
+
 from core.preprocessing import preprocess_ecg, quality_check
 from core.phase import triadic_embedding, check_phase_quality
 from core.features import compute_delta_S_ecg, compute_delta_I
@@ -84,27 +86,37 @@ class ECGOnlyPipeline:
         This is a simplified placeholder. In production, use a proper
         R-peak detection algorithm (e.g., Pan-Tompkins, or NeuroKit2).
         """
-        # For now, use a simple threshold-based peak detection
-        # In production, replace with robust R-peak detector
-        
-        # Find peaks above median + std
-        threshold = np.median(ecg_signal) + np.std(ecg_signal)
-        peaks = np.where(ecg_signal > threshold)[0]
-        
+        # For now, use a simple peak detection with distance and prominence.
+        # In production, replace with robust R-peak detector.
+        min_distance = int(0.4 * self.fs)
+        height = np.percentile(ecg_signal, 90)
+
+        peaks, _ = signal.find_peaks(
+            ecg_signal,
+            distance=min_distance,
+            prominence=0.3,
+            height=height
+        )
+
+        if len(peaks) < 2:
+            peaks, _ = signal.find_peaks(
+                ecg_signal,
+                distance=min_distance,
+                prominence=0.2,
+                height=np.percentile(ecg_signal, 80)
+            )
+
         if len(peaks) < 2:
             warnings.warn("Insufficient peaks detected in ECG signal")
             return np.array([])
-        
-        # Remove consecutive peaks (within 200ms)
-        min_distance = int(0.2 * self.fs)
-        filtered_peaks = [peaks[0]]
-        for peak in peaks[1:]:
-            if peak - filtered_peaks[-1] >= min_distance:
-                filtered_peaks.append(peak)
-        
-        # Compute RR intervals
-        rr_intervals = np.diff(filtered_peaks) / self.fs
-        
+
+        rr_intervals = np.diff(peaks) / self.fs
+        rr_intervals = rr_intervals[(rr_intervals > 0.4) & (rr_intervals < 2.0)]
+
+        if len(rr_intervals) == 0:
+            warnings.warn("No RR intervals in expected physiological range")
+            return np.array([])
+
         return rr_intervals
     
     def set_baseline(self, ecg_signal: np.ndarray) -> Dict[str, float]:
