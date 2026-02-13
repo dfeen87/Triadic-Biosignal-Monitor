@@ -128,8 +128,9 @@ def compute_spectral_centroid(sig: np.ndarray, fs: float) -> float:
     if psd_sum > 0:
         centroid = np.sum(freqs * psd) / psd_sum
     else:
-        # If PSD is all zeros (silent/flatline signal), return mean frequency
-        centroid = np.mean(freqs)
+        # If PSD is all zeros (silent/flatline signal), return 0.0
+        # to indicate absence of spectral content
+        centroid = 0.0
     
     return centroid
 
