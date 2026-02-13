@@ -245,7 +245,8 @@ def quality_check(
     flags['no_flatline'] = variance > 1e-10
     
     # Check for adequate variance (not too flat)
-    normalized_std = np.std(sig) / (np.abs(np.mean(sig)) + 1e-10)
+    # Use 1e-6 for better numerical stability than 1e-10
+    normalized_std = np.std(sig) / (np.abs(np.mean(sig)) + 1e-6)
     flags['adequate_variance'] = normalized_std > 0.01
     
     # Compute overall quality score
