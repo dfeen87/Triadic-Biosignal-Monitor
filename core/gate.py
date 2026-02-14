@@ -342,15 +342,17 @@ def detect_alert_events(
     
     # Process each alert period
     for onset_idx, offset_idx in zip(onset_indices, offset_indices):
-        if gate_series[offset_idx] == 0 and offset_idx > onset_idx:
-            offset_idx -= 1
+        # Use separate variable to avoid mutation issues with zip iteration
+        end_idx = offset_idx
+        if gate_series[end_idx] == 0 and end_idx > onset_idx:
+            end_idx -= 1
         # Check duration
-        duration = timestamps[offset_idx] - timestamps[onset_idx]
+        duration = timestamps[end_idx] - timestamps[onset_idx]
         if duration < min_duration:
             continue
         
         # Use peak ΔΦ value during alert period
-        alert_window = slice(onset_idx, offset_idx + 1)
+        alert_window = slice(onset_idx, end_idx + 1)
         peak_idx = onset_idx + np.argmax(delta_phi_series[alert_window])
         
         # Get artifact level

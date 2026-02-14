@@ -16,6 +16,7 @@ import numpy as np
 from scipy import signal, stats
 from typing import Dict, Optional, Tuple, List
 import warnings
+import math
 
 
 # ========================================
@@ -123,7 +124,13 @@ def compute_spectral_centroid(sig: np.ndarray, fs: float) -> float:
     freqs, psd = signal.welch(sig, fs=fs, nperseg=min(len(sig), 256))
     
     # Compute centroid as weighted mean
-    centroid = np.sum(freqs * psd) / np.sum(psd)
+    psd_sum = np.sum(psd)
+    if psd_sum > 0:
+        centroid = np.sum(freqs * psd) / psd_sum
+    else:
+        # If PSD is all zeros (silent/flatline signal), return 0.0
+        # to indicate absence of spectral content
+        centroid = 0.0
     
     return centroid
 
@@ -363,6 +370,15 @@ def permutation_entropy(
     """
     n = len(sig)
     
+    # Check if signal is too short for the embedding
+    min_length = order + delay * (order - 1)
+    if n < min_length:
+        warnings.warn(
+            f"Signal too short (n={n}) for permutation entropy with order={order}, "
+            f"delay={delay}. Minimum length required: {min_length}. Returning 0.0."
+        )
+        return 0.0
+    
     # Create embedded matrix
     permutations = {}
     for i in range(n - delay * (order - 1)):
@@ -389,7 +405,7 @@ def permutation_entropy(
     
     # Normalize
     if normalize:
-        max_entropy = np.log2(np.math.factorial(order))
+        max_entropy = np.log2(math.factorial(order))
         pe = pe / max_entropy if max_entropy > 0 else 0.0
     
     return pe
