@@ -70,8 +70,8 @@ G(t) = 1{ΔΦ(t) ≥ τ}
 
 ```bash
 # Clone the repository
-git clone https://github.com/dfeen87/triadic-biosignal-monitor.git
-cd triadic-biosignal-monitor
+git clone https://github.com/dfeen87/Triadic-Biosignal-Monitor.git
+cd Triadic-Biosignal-Monitor
 
 # Install dependencies
 pip install -r requirements.txt
@@ -88,7 +88,7 @@ jupyter notebook notebooks/01_phase_extraction_demo.ipynb
 ## Repository Structure
 
 ```
-triadic-biosignal-monitor/
+Triadic-Biosignal-Monitor/
 ├── README.md                            # This file
 ├── LICENSE                              # MIT License
 ├── .github/workflows                    # CI Pipeline
@@ -417,45 +417,14 @@ pytest --cov=core tests/
 Comprehensive documentation available in `/docs/`:
 
 - **[SCOPE_AND_SAFETY.md](docs/SCOPE_AND_SAFETY.md)** - Medical-device safe language, regulatory guidance
-- **[IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md)** - Technical implementation details
 - **[REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md)** - How to reproduce paper results
-- **[API_REFERENCE.md](docs/API_REFERENCE.md)** - Function signatures and usage
 - **[VALIDATION_PROTOCOL.md](docs/VALIDATION_PROTOCOL.md)** - Prospective validation guidelines
 
 ---
 
 ## Dependencies
 
-```
-# Core numerical computing
-numpy>=1.24.0
-scipy>=1.10.0
-
-# Signal processing
-mne>=1.3.0              # EEG processing
-neurokit2>=0.2.0        # ECG/HRV analysis
-PyWavelets>=1.4.0       # Wavelet transforms
-
-# Entropy and complexity
-antropy>=0.1.6          # Entropy measures
-nolds>=0.5.2            # Nonlinear dynamics
-
-# Configuration
-pyyaml>=6.0
-h5py>=3.8.0
-
-# Visualization
-matplotlib>=3.7.0
-seaborn>=0.12.0
-
-# Testing
-pytest>=7.3.0
-pytest-cov>=4.0.0
-
-# Notebooks
-jupyter>=1.0.0
-ipywidgets>=8.0.0
-```
+See [`requirements.txt`](requirements.txt) for the full, versioned list of dependencies.
 
 ---
 
@@ -504,7 +473,7 @@ If you use this software in your research, please cite:
            Early-Warning Detection in Coupled EEG–ECG Time Series},
   year = {2026},
   publisher = {GitHub},
-  url = {https://github.com/dfeen87/triadic-biosignal-monitor}
+  url = {https://github.com/dfeen87/Triadic-Biosignal-Monitor}
 }
 
 @article{kruger2026operator,
@@ -552,8 +521,8 @@ This work builds on established signal processing and time-series analysis metho
 
 ## Contact & Support
 
-- **Issues:** [GitHub Issues](https://github.com/dfeen87/triadic-biosignal-monitor/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/dfeen87/triadic-biosignal-monitor/discussions)
+- **Issues:** [GitHub Issues](https://github.com/dfeen87/Triadic-Biosignal-Monitor/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/dfeen87/Triadic-Biosignal-Monitor/discussions)
 - **Email:** marcelkrueger092@gmail.com, dfeen87@gmail.com
 
 ---

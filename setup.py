@@ -5,10 +5,18 @@ Setup script for package installation
 
 from setuptools import setup, find_packages
 from pathlib import Path
+import re
 
 # Read the README file for long description
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
+
+# Read version from the package __init__.py (single source of truth)
+init_text = (this_directory / "triadic_biosignal_monitor" / "__init__.py").read_text(encoding="utf-8")
+version_match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', init_text, re.MULTILINE)
+if not version_match:
+    raise RuntimeError("Unable to find version in triadic_biosignal_monitor/__init__.py")
+version = version_match.group(1)
 
 # Read requirements from requirements.txt
 requirements = []
@@ -35,7 +43,7 @@ dev_requirements = [
 
 setup(
     name="triadic-biosignal-monitor",
-    version="1.0.0",
+    version=version,
     author="Marcel Krüger, Don Feeney",
     author_email="marcelkrueger092@gmail.com, dfeen87@gmail.com",
     description="Operator-based heart-brain monitoring via triadic spiral-time embeddings",
