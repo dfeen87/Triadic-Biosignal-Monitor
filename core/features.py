@@ -18,6 +18,8 @@ from typing import Dict, Optional, Tuple, List
 import warnings
 import math
 
+from .phase import phase_locking_value
+
 
 # ========================================
 # Spectral/Morphological Features (ΔS)
@@ -543,6 +545,8 @@ def compute_delta_I(
     A decrease in entropy indicates reduced complexity and adaptability,
     which may precede instability events.
     """
+    method = method.lower()
+
     # Select entropy function
     if method == 'permutation_entropy':
         entropy_fn = permutation_entropy
@@ -552,13 +556,6 @@ def compute_delta_I(
         entropy_fn = approximate_entropy
     else:
         raise ValueError(f"Unknown method: {method}")
-    
-    # Compute entropies
-    if method == 'permutation_entropy':
-        if 'order' not in kwargs:
-            kwargs['order'] = 4
-        if 'normalize' not in kwargs:
-            kwargs['normalize'] = False
 
     current_entropy = entropy_fn(sig, **kwargs)
     baseline_entropy = entropy_fn(baseline_sig, **kwargs)
@@ -622,48 +619,6 @@ def magnitude_squared_coherence(
     return coherences
 
 
-def phase_locking_value(
-    phase1: np.ndarray,
-    phase2: np.ndarray,
-    window_size: Optional[int] = None
-) -> float:
-    """
-    Compute Phase Locking Value (PLV) between two phase signals.
-    
-    Parameters
-    ----------
-    phase1 : np.ndarray
-        First phase signal (radians)
-    phase2 : np.ndarray
-        Second phase signal (radians)
-    window_size : int, optional
-        Window size for local PLV. If None, compute global PLV.
-        
-    Returns
-    -------
-    float
-        Phase locking value (0 = no locking, 1 = perfect locking)
-    """
-    # Phase difference
-    phase_diff = phase1 - phase2
-    
-    # Complex representation
-    complex_diff = np.exp(1j * phase_diff)
-    
-    if window_size is None:
-        # Global PLV
-        plv = np.abs(np.mean(complex_diff))
-    else:
-        # Mean over sliding windows
-        plvs = []
-        for i in range(len(phase1) - window_size + 1):
-            window = complex_diff[i:i + window_size]
-            plvs.append(np.abs(np.mean(window)))
-        plv = np.mean(plvs)
-    
-    return plv
-
-
 def compute_delta_C(
     sig1: np.ndarray,
     sig2: np.ndarray,
@@ -708,6 +663,8 @@ def compute_delta_C(
     Measures loss of heart-brain coherence/coupling, which may
     indicate regulatory breakdown.
     """
+    method = method.lower()
+
     if method == 'plv':
         # Use phase locking value
         if phase1 is None or phase2 is None:

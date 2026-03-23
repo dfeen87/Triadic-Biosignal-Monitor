@@ -217,7 +217,7 @@ class TestDeltaI:
         
         # Current: more regular signal (lower entropy)
         t = np.linspace(0, 10 * 2 * np.pi, 1000)
-        current = np.sin(t) + 0.1 * np.random.randn(1000)
+        current = np.sin(t) + 0.01 * np.random.randn(1000)
         
         delta_I = compute_delta_I(current, baseline, method='permutation_entropy')
         

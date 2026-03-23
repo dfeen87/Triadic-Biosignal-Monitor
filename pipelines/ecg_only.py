@@ -208,8 +208,15 @@ class ECGOnlyPipeline:
         quality_score, quality_flags = quality_check(processed_ecg, self.fs)
         
         # Conservative fallback: no decision under poor quality or insufficient beats
-        if quality_score < 0.5 or len(current_rr) < 5:
-            warnings.warn("Poor signal quality or insufficient beats. Returning no-decision state.")
+        if quality_score < 0.5 or len(current_rr) < 5 or len(self.baseline_rr) < 5:
+            if quality_score < 0.5:
+                reason = f"poor signal quality (score={quality_score:.2f})"
+            else:
+                reason = (
+                    f"insufficient RR intervals "
+                    f"(current: {len(current_rr)}, baseline: {len(self.baseline_rr)})"
+                )
+            warnings.warn(f"Returning no-decision state: {reason}.")
             return {
                 'delta_phi': 0.0,
                 'gate': 0,
@@ -287,9 +294,31 @@ class ECGOnlyPipeline:
         if self.baseline_rr is None:
             raise ValueError("Baseline not set. Call set_baseline() first.")
         
+        # Validate overlap
+        if not (0 <= overlap < 1):
+            raise ValueError(f"overlap must be in [0, 1), got {overlap}")
+
         # Calculate window parameters
         window_samples = int(window_size * self.fs)
         step_samples = int(window_samples * (1 - overlap))
+
+        # Guard: signal too short for even one window
+        if len(ecg_signal) < window_samples:
+            warnings.warn(
+                f"Signal length ({len(ecg_signal)} samples) is shorter than one window "
+                f"({window_samples} samples). Returning empty outputs."
+            )
+            return {
+                'timestamps': np.array([]),
+                'delta_phi': np.array([]),
+                'gate': np.array([], dtype=int),
+                'delta_S': np.array([]),
+                'delta_I': np.array([]),
+                'delta_C': np.array([]),
+                'quality_scores': np.array([]),
+                'artifact_levels': np.array([]),
+                'alerts': []
+            }
         
         # Initialize result arrays
         n_windows = (len(ecg_signal) - window_samples) // step_samples + 1

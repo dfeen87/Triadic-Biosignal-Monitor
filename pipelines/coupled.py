@@ -250,11 +250,24 @@ class CoupledPipeline:
         baseline_rr = self.extract_rr_intervals(self.baseline_ecg)
         
         if len(current_rr) < 5 or len(baseline_rr) < 5:
-            warnings.warn("Insufficient RR intervals. Using EEG-only mode.")
-            # Fall back to EEG-only
-            delta_S = compute_delta_S_eeg(processed_eeg, self.baseline_eeg, self.fs)
-            delta_I = compute_delta_I(processed_eeg, self.baseline_eeg, method='permutation_entropy')
-            delta_C = 0.0
+            warnings.warn(
+                f"Insufficient RR intervals (current: {len(current_rr)}, "
+                f"baseline: {len(baseline_rr)}). Returning no-decision state."
+            )
+            return {
+                'delta_phi': 0.0,
+                'gate': 0,
+                'delta_S': 0.0,
+                'delta_I': 0.0,
+                'delta_C': 0.0,
+                'quality': {
+                    'eeg_score': eeg_quality,
+                    'ecg_score': ecg_quality,
+                    'eeg_artifact_fraction': float(np.mean(eeg_artifact_mask)),
+                    'ecg_artifact_fraction': float(np.mean(ecg_artifact_mask))
+                },
+                'no_decision': True
+            }
         else:
             # Compute all three feature types
             
@@ -350,9 +363,32 @@ class CoupledPipeline:
         eeg_signal = eeg_signal[:min_len]
         ecg_signal = ecg_signal[:min_len]
         
+        # Validate overlap
+        if not (0 <= overlap < 1):
+            raise ValueError(f"overlap must be in [0, 1), got {overlap}")
+
         # Calculate window parameters
         window_samples = int(window_size * self.fs)
         step_samples = int(window_samples * (1 - overlap))
+        
+        # Guard: signal too short for even one window
+        if min_len < window_samples:
+            warnings.warn(
+                f"Signal length ({min_len} samples) is shorter than one window "
+                f"({window_samples} samples). Returning empty outputs."
+            )
+            return {
+                'timestamps': np.array([]),
+                'delta_phi': np.array([]),
+                'gate': np.array([], dtype=int),
+                'delta_S': np.array([]),
+                'delta_I': np.array([]),
+                'delta_C': np.array([]),
+                'eeg_quality_scores': np.array([]),
+                'ecg_quality_scores': np.array([]),
+                'artifact_levels': np.array([]),
+                'alerts': []
+            }
         
         # Initialize result arrays
         n_windows = (min_len - window_samples) // step_samples + 1

@@ -220,9 +220,31 @@ class EEGOnlyPipeline:
         if self.baseline_eeg is None:
             raise ValueError("Baseline not set. Call set_baseline() first.")
         
+        # Validate overlap
+        if not (0 <= overlap < 1):
+            raise ValueError(f"overlap must be in [0, 1), got {overlap}")
+
         # Calculate window parameters
         window_samples = int(window_size * self.fs)
         step_samples = int(window_samples * (1 - overlap))
+
+        # Guard: signal too short for even one window
+        if len(eeg_signal) < window_samples:
+            warnings.warn(
+                f"Signal length ({len(eeg_signal)} samples) is shorter than one window "
+                f"({window_samples} samples). Returning empty outputs."
+            )
+            return {
+                'timestamps': np.array([]),
+                'delta_phi': np.array([]),
+                'gate': np.array([], dtype=int),
+                'delta_S': np.array([]),
+                'delta_I': np.array([]),
+                'delta_C': np.array([]),
+                'quality_scores': np.array([]),
+                'artifact_levels': np.array([]),
+                'alerts': []
+            }
         
         # Initialize result arrays
         n_windows = (len(eeg_signal) - window_samples) // step_samples + 1
