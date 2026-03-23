@@ -15,6 +15,7 @@ import numpy as np
 from typing import Dict, Optional, Tuple
 import warnings
 
+from core.config_adapter import adapt_config
 from core.preprocessing import (
     preprocess_eeg,
     preprocess_ecg,
@@ -49,13 +50,23 @@ class CoupledPipeline:
         Duration of baseline window in seconds
     config : InstabilityConfig, optional
         Configuration for instability detection with all three weights
+    entropy_kwargs : dict, optional
+        Keyword arguments forwarded to the entropy function (e.g. order, delay,
+        normalize for permutation_entropy).
+    delta_I_method : str, optional
+        Entropy method to use for ΔI (default: 'permutation_entropy').
+    delta_C_method : str, optional
+        Coupling method to use for ΔC (default: 'plv').
     """
     
     def __init__(
         self,
         fs: float,
         baseline_duration: float = 60.0,
-        config: Optional[InstabilityConfig] = None
+        config: Optional[InstabilityConfig] = None,
+        entropy_kwargs: Optional[Dict] = None,
+        delta_I_method: str = 'permutation_entropy',
+        delta_C_method: str = 'plv',
     ):
         self.fs = fs
         self.baseline_duration = baseline_duration
@@ -70,6 +81,9 @@ class CoupledPipeline:
             )
         
         self.config = config
+        self._entropy_kwargs = entropy_kwargs or {}
+        self._delta_I_method = delta_I_method
+        self._delta_C_method = delta_C_method
         self.baseline_eeg = None
         self.baseline_ecg = None
         self.baseline_phase_eeg = None
@@ -277,8 +291,16 @@ class CoupledPipeline:
             delta_S = 0.5 * delta_S_eeg + 0.5 * delta_S_ecg  # Average of both
             
             # ΔI: Combine EEG and ECG entropy features
-            delta_I_eeg = compute_delta_I(processed_eeg, self.baseline_eeg, method='permutation_entropy')
-            delta_I_ecg = compute_delta_I(current_rr, baseline_rr, method='permutation_entropy')
+            delta_I_eeg = compute_delta_I(
+                processed_eeg, self.baseline_eeg,
+                method=self._delta_I_method,
+                **self._entropy_kwargs
+            )
+            delta_I_ecg = compute_delta_I(
+                current_rr, baseline_rr,
+                method=self._delta_I_method,
+                **self._entropy_kwargs
+            )
             delta_I = 0.5 * delta_I_eeg + 0.5 * delta_I_ecg  # Average of both
             
             # ΔC: EEG-ECG coupling deviation
@@ -289,7 +311,7 @@ class CoupledPipeline:
                 processed_eeg, processed_ecg,
                 self.baseline_eeg, self.baseline_ecg,
                 self.fs,
-                method='plv',
+                method=self._delta_C_method,
                 phase1=current_phase_eeg,
                 phase2=current_phase_ecg,
                 baseline_phase1=self.baseline_phase_eeg,
@@ -488,45 +510,54 @@ def run_coupled_pipeline(
     fs : float
         Sampling frequency in Hz
     config : dict, optional
-        Configuration dictionary
+        Configuration dictionary. Accepts both the nested YAML structure
+        (``instability_functional``, ``sliding_window``, ``features``, …) and
+        the legacy flat layout (``alpha``, ``window_size``, …).
         
     Returns
     -------
     dict
         Complete analysis results with all three terms
     """
-    # Parse config
-    if config is None:
-        config = {}
-    
+    # Resolve nested YAML structure → flat params
+    adapted = adapt_config(config)
+
     instability_config = InstabilityConfig(
-        alpha=config.get('alpha', 0.4),
-        beta=config.get('beta', 0.3),
-        gamma=config.get('gamma', 0.3),
-        threshold=config.get('threshold', 2.5)
+        alpha=adapted['alpha'],
+        beta=adapted['beta'],
+        gamma=adapted['gamma'],
+        threshold=adapted['threshold'],
     )
-    
-    baseline_duration = config.get('baseline_duration', 60.0)
-    window_size = config.get('window_size', 10.0)
-    overlap = config.get('overlap', 0.5)
-    
+
+    baseline_duration = adapted['baseline_duration']
+    window_size = adapted['window_size']
+    overlap = adapted['overlap']
+    entropy_kwargs = {
+        'order': adapted['entropy_order'],
+        'delay': adapted['entropy_delay'],
+        'normalize': adapted['entropy_normalize'],
+    }
+
     # Initialize pipeline
     pipeline = CoupledPipeline(
         fs=fs,
         baseline_duration=baseline_duration,
-        config=instability_config
+        config=instability_config,
+        entropy_kwargs=entropy_kwargs,
+        delta_I_method=adapted['delta_I_method'],
+        delta_C_method=adapted['delta_C_method'],
     )
-    
+
     # Set baseline
     baseline_metrics = pipeline.set_baseline(baseline_eeg, baseline_ecg)
-    
+
     # Process continuous signals
     results = pipeline.process_continuous(
         eeg_signal, ecg_signal,
         window_size=window_size,
         overlap=overlap
     )
-    
+
     # Add baseline info to results
     results['baseline_metrics'] = baseline_metrics
     results['config'] = {
@@ -539,5 +570,5 @@ def run_coupled_pipeline(
         'window_size': window_size,
         'overlap': overlap
     }
-    
+
     return results
