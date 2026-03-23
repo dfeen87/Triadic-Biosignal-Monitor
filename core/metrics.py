@@ -260,7 +260,7 @@ def auc_score(fpr: np.ndarray, tpr: np.ndarray) -> float:
     tpr_sorted = tpr[sorted_idx]
     
     # Compute AUC using trapezoidal rule
-    auc = np.trapz(tpr_sorted, fpr_sorted)
+    auc = np.trapezoid(tpr_sorted, fpr_sorted)
     
     return auc
 

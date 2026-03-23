@@ -16,6 +16,7 @@ import numpy as np
 from typing import Dict, Optional, Tuple
 import warnings
 
+from core.config_adapter import adapt_config
 from core.preprocessing import preprocess_eeg, quality_check
 from core.phase import triadic_embedding, check_phase_quality
 from core.features import compute_delta_S_eeg, compute_delta_I
@@ -41,13 +42,20 @@ class EEGOnlyPipeline:
     config : InstabilityConfig, optional
         Configuration for instability detection
         For EEG-only, gamma should be 0 and alpha+beta=1
+    entropy_kwargs : dict, optional
+        Keyword arguments forwarded to the entropy function (e.g. order, delay,
+        normalize for permutation_entropy).
+    delta_I_method : str, optional
+        Entropy method to use for ΔI (default: 'permutation_entropy').
     """
     
     def __init__(
         self,
         fs: float,
         baseline_duration: float = 60.0,
-        config: Optional[InstabilityConfig] = None
+        config: Optional[InstabilityConfig] = None,
+        entropy_kwargs: Optional[Dict] = None,
+        delta_I_method: str = 'permutation_entropy',
     ):
         self.fs = fs
         self.baseline_duration = baseline_duration
@@ -62,6 +70,8 @@ class EEGOnlyPipeline:
             )
         
         self.config = config
+        self._entropy_kwargs = entropy_kwargs or {}
+        self._delta_I_method = delta_I_method
         self.baseline_eeg = None
         self.baseline_features = None
         
@@ -153,7 +163,11 @@ class EEGOnlyPipeline:
         
         # Compute features
         delta_S = compute_delta_S_eeg(processed_eeg, self.baseline_eeg, self.fs)
-        delta_I = compute_delta_I(processed_eeg, self.baseline_eeg, method='permutation_entropy')
+        delta_I = compute_delta_I(
+            processed_eeg, self.baseline_eeg,
+            method=self._delta_I_method,
+            **self._entropy_kwargs
+        )
         
         # Compute EEG-only instability functional (no coupling term)
         delta_phi = ablation_eeg_only(
@@ -324,47 +338,53 @@ def run_eeg_only_pipeline(
     fs : float
         Sampling frequency in Hz
     config : dict, optional
-        Configuration dictionary with keys:
-        - 'alpha', 'beta', 'gamma', 'threshold'
-        - 'baseline_duration', 'window_size', 'overlap'
+        Configuration dictionary. Accepts both the nested YAML structure
+        (``instability_functional``, ``sliding_window``, ``features``, …) and
+        the legacy flat layout (``alpha``, ``window_size``, …).
         
     Returns
     -------
     dict
         Complete analysis results
     """
-    # Parse config
-    if config is None:
-        config = {}
-    
+    # Resolve nested YAML structure → flat params
+    adapted = adapt_config(config)
+
     instability_config = InstabilityConfig(
-        alpha=config.get('alpha', 0.6),
-        beta=config.get('beta', 0.4),
+        alpha=adapted['alpha'],
+        beta=adapted['beta'],
         gamma=0.0,  # Always 0 for EEG-only
-        threshold=config.get('threshold', 2.5)
+        threshold=adapted['threshold'],
     )
-    
-    baseline_duration = config.get('baseline_duration', 60.0)
-    window_size = config.get('window_size', 10.0)
-    overlap = config.get('overlap', 0.5)
-    
+
+    baseline_duration = adapted['baseline_duration']
+    window_size = adapted['window_size']
+    overlap = adapted['overlap']
+    entropy_kwargs = {
+        'order': adapted['entropy_order'],
+        'delay': adapted['entropy_delay'],
+        'normalize': adapted['entropy_normalize'],
+    }
+
     # Initialize pipeline
     pipeline = EEGOnlyPipeline(
         fs=fs,
         baseline_duration=baseline_duration,
-        config=instability_config
+        config=instability_config,
+        entropy_kwargs=entropy_kwargs,
+        delta_I_method=adapted['delta_I_method'],
     )
-    
+
     # Set baseline
     baseline_metrics = pipeline.set_baseline(baseline_eeg)
-    
+
     # Process continuous signal
     results = pipeline.process_continuous(
         eeg_signal,
         window_size=window_size,
         overlap=overlap
     )
-    
+
     # Add baseline info to results
     results['baseline_metrics'] = baseline_metrics
     results['config'] = {
@@ -377,5 +397,5 @@ def run_eeg_only_pipeline(
         'window_size': window_size,
         'overlap': overlap
     }
-    
+
     return results
