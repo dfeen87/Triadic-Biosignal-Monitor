@@ -319,7 +319,7 @@ class StreamingPipeline:
         rr_current = self._extract_rr_simple(processed_ecg)
         rr_baseline = self._extract_rr_simple(self.baseline_ecg)
         
-        if len(rr_current) < 5:
+        if len(rr_current) < 5 or len(rr_baseline) < 5:
             return {
                 'delta_phi': 0.0,
                 'gate': 0,
@@ -385,13 +385,26 @@ class StreamingPipeline:
         rr_current = self._extract_rr_simple(processed_ecg)
         rr_baseline = self._extract_rr_simple(self.baseline_ecg)
         
+        if len(rr_current) < 5 or len(rr_baseline) < 5:
+            warnings.warn(
+                f"Insufficient RR intervals for coupled mode "
+                f"(current: {len(rr_current)}, baseline: {len(rr_baseline)}). "
+                "Returning no-decision state."
+            )
+            return {
+                'delta_phi': 0.0,
+                'gate': 0,
+                'no_decision': True,
+                'reason': 'insufficient_rr'
+            }
+        
         # Compute all three terms
         delta_S_eeg = compute_delta_S_eeg(processed_eeg, self.baseline_eeg, self.fs)
-        delta_S_ecg = compute_delta_S_ecg(rr_current, rr_baseline, fs_rr=4.0) if len(rr_current) >= 5 else 0.0
+        delta_S_ecg = compute_delta_S_ecg(rr_current, rr_baseline, fs_rr=4.0)
         delta_S = 0.5 * delta_S_eeg + 0.5 * delta_S_ecg
         
         delta_I_eeg = compute_delta_I(processed_eeg, self.baseline_eeg, method='permutation_entropy')
-        delta_I_ecg = compute_delta_I(rr_current, rr_baseline, method='permutation_entropy') if len(rr_current) >= 5 else 0.0
+        delta_I_ecg = compute_delta_I(rr_current, rr_baseline, method='permutation_entropy')
         delta_I = 0.5 * delta_I_eeg + 0.5 * delta_I_ecg
         
         # Coupling term
