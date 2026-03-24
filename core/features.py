@@ -63,7 +63,7 @@ def compute_bandpower(
     idx = np.logical_and(freqs >= freq_band[0], freqs <= freq_band[1])
     
     # Integrate power
-    band_power = np.trapezoid(psd[idx], freqs[idx])
+    band_power = np.trapz(psd[idx], freqs[idx])
     
     return band_power
 
@@ -213,9 +213,9 @@ def compute_lf_hf_ratio(
     freqs, psd = signal.welch(rr_uniform, fs=fs_rr, nperseg=min(len(rr_uniform), 256))
     
     # LF and HF power
-    lf_power = np.trapezoid(psd[(freqs >= 0.04) & (freqs < 0.15)], 
+    lf_power = np.trapz(psd[(freqs >= 0.04) & (freqs < 0.15)], 
                             freqs[(freqs >= 0.04) & (freqs < 0.15)])
-    hf_power = np.trapezoid(psd[(freqs >= 0.15) & (freqs < 0.4)], 
+    hf_power = np.trapz(psd[(freqs >= 0.15) & (freqs < 0.4)], 
                             freqs[(freqs >= 0.15) & (freqs < 0.4)])
     
     # LF/HF ratio
