@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![ResearchGate](https://img.shields.io/badge/ResearchGate-Preprint-00CCBB.svg)](https://www.researchgate.net/publication/400100860_Operator-Based_Heart-Brain_Isostasis_Monitoring_via_Triadic_Spiral-Time_Embeddings_A_Conservative_Falsifiable_Framework_for_Early-Warning_Detection_in_Coupled_EEGECG_Dynamics)
+[![CI](https://github.com/dfeen87/Triadic-Biosignal-Monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/dfeen87/Triadic-Biosignal-Monitor/actions/workflows/ci.yml)
 
 ## Overview
 
