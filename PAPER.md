@@ -1,6 +1,4 @@
-# Operator-Based Heart–Brain Isostasis Monitoring via Triadic Spiral-Time Embeddings
-
-**A Conservative, Falsifiable Framework for Early-Warning Detection in Coupled EEG/ECG Dynamics**
+# Operator-Based Heart–Brain Isostasis Monitoring via Triadic Spiral-Time Embeddings A Conservative, Falsifiable Framework for Early-Warning Detection in Coupled EEG/ECG Dynamics
 
 Marcel Krüger¹, Don Feeney²
 
